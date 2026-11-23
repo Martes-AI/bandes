@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { LayoutGrid, SlidersHorizontal } from "lucide-react";
 import { Barra } from "./components/Barra";
+import { CONFIG } from "./config";
 import { ChiediAi, type StatoAi } from "./components/ChiediAi";
 import { Dettaglio } from "./components/Dettaglio";
 import { Lista } from "./components/Lista";
@@ -18,17 +19,35 @@ import {
   type Ordine,
 } from "./lib/filtri";
 import { data, dataLunga, numero, oggiIso } from "./lib/formato";
-import { MAX_BANDI_DA_VALUTARE, type Catalogo, type Profilo, type Valutazione } from "./lib/tipi";
+import {
+  MAX_BANDI_DA_VALUTARE,
+  type Catalogo,
+  type Fornitore,
+  type Impresa,
+  type Profilo,
+  type Valutazione,
+} from "./lib/tipi";
 
-const CHIAVE_PROFILO = "bandolo.profilo";
 const PAGINA = 40;
+const fornitoreIniziale: Fornitore = CONFIG.fornitoreSuggerito
+  ? { impresa: CONFIG.fornitoreSuggerito.impresa, cosa: CONFIG.fornitoreSuggerito.cosa }
+  : { impresa: null, cosa: "" };
 
-function profiloSalvato(): Profilo {
+/** Legge dal browser; senza localStorage (navigazione privata) si riparte da zero. */
+function salvato<T>(chiave: string, vuoto: T): T {
   try {
-    const salvato = JSON.parse(localStorage.getItem(CHIAVE_PROFILO) ?? "null");
-    return salvato ? { ...profiloVuoto, ...salvato, cerca: "" } : profiloVuoto;
+    const v = JSON.parse(localStorage.getItem(`bandes.${chiave}`) ?? "null");
+    return v && typeof v === "object" && !Array.isArray(vuoto) ? { ...vuoto, ...v } : (v ?? vuoto);
   } catch {
-    return profiloVuoto;
+    return vuoto;
+  }
+}
+
+function salva(chiave: string, valore: unknown) {
+  try {
+    localStorage.setItem(`bandes.${chiave}`, JSON.stringify(valore));
+  } catch {
+    // Senza localStorage i dati valgono solo per questa visita.
   }
 }
 
@@ -41,19 +60,23 @@ const MESSAGGI_ERRORE: Record<string, string> = {
 export function App() {
   const [catalogo, setCatalogo] = useState<Catalogo | null>(null);
   const [erroreCatalogo, setErroreCatalogo] = useState(false);
-  const [profilo, setProfilo] = useState<Profilo>(profiloSalvato);
+  const [profilo, setProfilo] = useState<Profilo>(() => ({ ...salvato("profilo", profiloVuoto), cerca: "" }));
+  const [azienda, setAzienda] = useState<Impresa | null>(() => salvato<Impresa | null>("azienda", null));
+  const [fornitore, setFornitore] = useState<Fornitore>(() => salvato("fornitore", fornitoreIniziale));
   const [ordine, setOrdine] = useState<Ordine>("pertinenza");
   const [mostrati, setMostrati] = useState(PAGINA);
   const [aperto, setAperto] = useState<string | null>(null);
   const [filtriAperti, setFiltriAperti] = useState(false);
   const [aiDisponibile, setAiDisponibile] = useState<boolean | null>(null);
-  const [descrizione, setDescrizione] = useState("");
+  const [descrizione, setDescrizione] = useState(() => salvato("descrizione", ""));
   const [statoAi, setStatoAi] = useState<StatoAi>({ fase: "pronta" });
   const [valutazioni, setValutazioni] = useState<Record<string, Valutazione>>({});
   const oggi = oggiIso();
 
   useEffect(() => {
-    fetch("/catalogo.json")
+    // /api/catalogo dà il catalogo aggiornato stanotte; /catalogo.json quello incluso nel deploy.
+    fetch("/api/catalogo")
+      .then((r) => (r.ok ? r : fetch("/catalogo.json")))
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
       .then(setCatalogo)
       .catch(() => setErroreCatalogo(true));
@@ -64,18 +87,26 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    try {
-      const { cerca: _cerca, ...daSalvare } = profilo;
-      localStorage.setItem(CHIAVE_PROFILO, JSON.stringify(daSalvare));
-    } catch {
-      // Senza localStorage il profilo vale solo per questa visita.
-    }
+    const { cerca: _cerca, ...daSalvare } = profilo;
+    salva("profilo", daSalvare);
   }, [profilo]);
+  useEffect(() => salva("azienda", azienda), [azienda]);
+  useEffect(() => salva("fornitore", fornitore), [fornitore]);
+  useEffect(() => salva("descrizione", descrizione), [descrizione]);
 
   const cambia = useCallback((parte: Partial<Profilo>) => {
     setProfilo((p) => ({ ...p, ...parte }));
     setMostrati(PAGINA);
   }, []);
+
+  // La P.IVA dice dov'è la sede legale: la regione si imposta da sola.
+  const cambiaAzienda = useCallback(
+    (i: Impresa | null) => {
+      setAzienda(i);
+      if (i?.regione) cambia({ regione: i.regione });
+    },
+    [cambia],
+  );
 
   const bandi = catalogo?.bandi ?? [];
 
@@ -130,7 +161,7 @@ export function App() {
       const risposta = await fetch("/api/valuta", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ profilo, descrizione, ids: daValutare.map((b) => b.id) }),
+        body: JSON.stringify({ profilo, descrizione, azienda, fornitore, ids: daValutare.map((b) => b.id) }),
       });
       const dati = await risposta.json();
       if (!risposta.ok) throw new Error(dati.errore);
@@ -152,10 +183,15 @@ export function App() {
       <Barra
         profilo={profilo}
         cambia={cambia}
-        azzera={() => cambia(profiloVuoto)}
+        azzera={() => {
+          cambia(profiloVuoto);
+          setAzienda(null);
+        }}
         regioni={regioni}
         settori={settori}
         conteggiObiettivi={conteggiObiettivi}
+        azienda={azienda}
+        cambiaAzienda={cambiaAzienda}
         contoFondoPerduto={contoFondoPerduto}
         aperta={filtriAperti}
         chiudi={() => setFiltriAperti(false)}
@@ -243,6 +279,9 @@ export function App() {
 
             <ChiediAi
               disponibile={aiDisponibile}
+              azienda={azienda}
+              fornitore={fornitore}
+              cambiaFornitore={setFornitore}
               descrizione={descrizione}
               cambiaDescrizione={setDescrizione}
               stato={statoAi}

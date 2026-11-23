@@ -72,6 +72,11 @@ export function Dettaglio({ bando, valutazione, oggi, chiudi }: Props) {
                   <span className="secondario">Da controllare:</span> {valutazione.verifica}
                 </p>
               )}
+              {valutazione.fornitore && (
+                <p className="muto">
+                  <span className="secondario">Sul fornitore:</span> {valutazione.fornitore}
+                </p>
+              )}
             </div>
           )}
 

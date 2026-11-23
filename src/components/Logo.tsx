@@ -1,17 +1,18 @@
 import { CONFIG } from "../config";
 
-/** Il capo del filo: un nodo e il filo che esce. */
+/** Un timbro con la spunta: il bando che fa per te. */
 export function Logo() {
   return (
     <span className="logo">
       <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden>
-        <circle cx="8.5" cy="12" r="4.75" fill="none" stroke="currentColor" strokeWidth="2.5" />
+        <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="2.25" />
         <path
-          d="M13.25 12c2 0 2.1-3.25 4.1-3.25S19.5 12 21.5 12"
+          d="M7.75 12.25l2.75 2.75 5.75-6"
           fill="none"
           stroke="var(--verde)"
           strokeWidth="2.5"
           strokeLinecap="round"
+          strokeLinejoin="round"
         />
       </svg>
       {CONFIG.nome}

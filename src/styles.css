@@ -1,4 +1,4 @@
-/* Bandolo — stile grafite, una sola tinta (il verde dei timbri), numeri in mono.
+/* Bandes — stile grafite, una sola tinta (il verde dei timbri), numeri in mono.
    Metodo: unslop di Damir Sokolovsky (github.com/heydamir/unslop), CC BY 4.0. */
 
 :root {
@@ -624,6 +624,180 @@ kbd {
   color: var(--rosso);
 }
 
+.chiedi-modulo {
+  display: grid;
+  gap: 16px;
+}
+.chiedi-modulo .campo {
+  margin: 0;
+}
+.chiedi-testo {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+.chiedi-testo h2 {
+  margin-bottom: 0;
+}
+.fornitore {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.fornitore legend {
+  padding: 0;
+}
+.fornitore-campi {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 12px;
+  margin-top: 4px;
+}
+.fornitore-campi .campo-etichetta {
+  font-size: 12px;
+  color: var(--testo-3);
+}
+input.testo {
+  width: 100%;
+  height: 36px;
+  padding: 0 12px;
+  background: var(--fondo);
+  border: 1px solid var(--linea);
+  border-radius: 10px;
+  outline: none;
+  transition: border-color 160ms var(--curva);
+}
+input.testo:focus {
+  border-color: var(--linea-forte);
+}
+input.testo::placeholder {
+  color: var(--testo-3);
+}
+.chiedi .cerca {
+  background: var(--fondo);
+}
+.cerca.piva {
+  padding: 0 10px 0 12px;
+  font-family: var(--mono);
+}
+.campo-nota {
+  display: block;
+  margin: 6px 4px 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--testo-3);
+}
+.impresa {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 6px 4px 6px 10px;
+  background: var(--rialzo);
+  border: 1px solid var(--linea);
+  border-radius: 10px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+.impresa-segno {
+  flex: none;
+  color: var(--verde);
+}
+.impresa-testo {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+}
+.impresa-nome {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.impresa-meta {
+  font-size: 11.5px;
+  line-height: 16px;
+  color: var(--testo-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.icona-bottone.piccola {
+  width: 24px;
+  height: 24px;
+  flex: none;
+}
+.ricerca-impresa .cerca {
+  padding-right: 4px;
+}
+.bottone.mini {
+  height: 28px;
+  padding: 0 10px;
+  font-size: 13px;
+  border-radius: 7px;
+}
+.risultati {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 4px;
+  display: grid;
+  gap: 2px;
+  background: var(--fondo);
+  border: 1px solid var(--linea-forte);
+  border-radius: 12px;
+  animation: entra 220ms var(--curva) both;
+}
+.risultato {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  text-align: left;
+  transition: background-color 140ms var(--curva);
+}
+.risultato:hover {
+  background: var(--rialzo);
+}
+.risultato svg {
+  flex: none;
+  margin-top: 2px;
+}
+.sito {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  font-size: 11.5px;
+  line-height: 16px;
+  color: var(--verde-testo);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+a.sito:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.link-bottone {
+  margin-top: 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--verde-testo);
+  font-size: 13px;
+  text-align: left;
+}
+.link-bottone:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
 /* Bottoni */
 .bottone {
   display: inline-flex;
@@ -1046,6 +1220,9 @@ kbd {
   .chiedi-piede {
     flex-direction: column;
     align-items: stretch;
+  }
+  .fornitore-campi {
+    grid-template-columns: 1fr;
   }
   .lista-testa {
     flex-direction: column;

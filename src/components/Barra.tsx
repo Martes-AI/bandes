@@ -3,7 +3,8 @@ import { Check, ChevronDown, Search, X } from "lucide-react";
 import { CONFIG } from "../config";
 import { OBIETTIVI, SOGGETTI } from "../lib/filtri";
 import { numero, regioneBreve } from "../lib/formato";
-import { DIMENSIONI, type Profilo } from "../lib/tipi";
+import { DIMENSIONI, type Impresa, type Profilo } from "../lib/tipi";
+import { CampoPiva } from "./CampoPiva";
 import { Logo } from "./Logo";
 
 interface Props {
@@ -14,6 +15,8 @@ interface Props {
   settori: string[];
   conteggiObiettivi: Record<string, number>;
   contoFondoPerduto: number;
+  azienda: Impresa | null;
+  cambiaAzienda: (i: Impresa | null) => void;
   aperta: boolean;
   chiudi: () => void;
 }
@@ -112,6 +115,12 @@ export function Barra(props: Props) {
 
         <section className="gruppo">
           <h2 className="gruppo-titolo">La tua impresa</h2>
+          <CampoPiva
+            etichetta="Partita IVA"
+            impresa={props.azienda}
+            onImpresa={props.cambiaAzienda}
+            nota="Facoltativa: trova la sede e imposta la regione"
+          />
           <Scelta
             etichetta="Regione"
             valore={profilo.regione}

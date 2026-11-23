@@ -14,5 +14,5 @@
     "types": ["@cloudflare/workers-types"],
     "tsBuildInfoFile": "./node_modules/.tmp/worker.tsbuildinfo"
   },
-  "include": ["worker", "src/lib/tipi.ts"]
+  "include": ["worker", "src/lib/tipi.ts", "src/lib/piva.ts", "scripts/normalizza.d.mts"]
 }

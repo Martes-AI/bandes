@@ -53,6 +53,29 @@ export interface Profilo {
   cerca: string;
 }
 
+/** Un'impresa trovata con la partita IVA nel registro europeo VIES */
+export interface Impresa {
+  piva: string;
+  nome: string;
+  comune: string | null;
+  provincia: string | null;
+  regione: string | null;
+  /** Sito ufficiale, quando la ricerca lo trova */
+  sito?: string | null;
+}
+
+/** Un risultato della ricerca per nome: verificata = partita IVA confermata dal registro VIES */
+export interface ImpresaTrovata extends Impresa {
+  verificata: boolean;
+}
+
+/** Chi fornirà il servizio pagato dal bando: facoltativo, serve all'AI per le regole sul fornitore */
+export interface Fornitore {
+  impresa: Impresa | null;
+  /** Cosa fornisce, scritto dall'utente */
+  cosa: string;
+}
+
 export type Esito = "si" | "forse" | "no";
 
 export interface Valutazione {
@@ -62,11 +85,15 @@ export interface Valutazione {
   perche: string;
   /** Cosa controllare prima di fare domanda */
   verifica: string;
+  /** Cosa dice il bando sul fornitore indicato, vuoto se non c'è un fornitore */
+  fornitore: string;
 }
 
 export interface RichiestaValutazione {
   profilo: Profilo;
   descrizione: string;
+  azienda: Impresa | null;
+  fornitore: Fornitore | null;
   ids: string[];
 }
 
