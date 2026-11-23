@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { LayoutGrid, SlidersHorizontal } from "lucide-react";
+import { LayoutGrid, SlidersHorizontal, X } from "lucide-react";
 import { Barra } from "./components/Barra";
 import { CONFIG } from "./config";
 import { ChiediAi, type StatoAi } from "./components/ChiediAi";
@@ -236,7 +236,14 @@ export function App() {
               <section className="scheda scheda-mappa" aria-label="Bandi per regione">
                 <header className="scheda-testa">
                   <span>Dove sono i bandi</span>
-                  <span className="muto mono piccolo">Tocca una regione</span>
+                  {profilo.regione ? (
+                    <button className="tutta-italia mono piccolo" onClick={() => cambia({ regione: null })}>
+                      <X size={12} strokeWidth={1.5} aria-hidden />
+                      Tutta Italia
+                    </button>
+                  ) : (
+                    <span className="muto mono piccolo">Tocca una regione</span>
+                  )}
                 </header>
                 <Mappa
                   conteggi={conteggiRegioni}

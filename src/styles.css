@@ -502,6 +502,13 @@ kbd {
   position: relative;
   width: min(100%, 460px);
   margin: 0 auto;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.mappa-tela.sopra {
+  cursor: pointer;
 }
 .mappa svg {
   display: block;
@@ -511,7 +518,7 @@ kbd {
 }
 .punto {
   fill: var(--testo);
-  cursor: pointer;
+  pointer-events: none;
   transition:
     fill 180ms var(--curva),
     opacity 180ms var(--curva);
@@ -529,6 +536,15 @@ kbd {
 }
 .filo rect {
   fill: var(--verde);
+}
+.filo {
+  pointer-events: none;
+}
+.filo.prova line {
+  stroke: var(--testo);
+}
+.filo.prova rect {
+  fill: var(--testo);
 }
 .etichetta {
   position: absolute;
@@ -548,6 +564,28 @@ kbd {
 }
 .etichetta.a-sinistra {
   transform: translate(-100%, -50%);
+}
+.etichetta.prova {
+  background: var(--testo);
+  color: var(--fondo);
+}
+.tutta-italia {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border: 1px solid var(--linea);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--testo-2);
+  cursor: pointer;
+  transition:
+    color 160ms var(--curva),
+    border-color 160ms var(--curva);
+}
+.tutta-italia:hover {
+  color: var(--testo);
+  border-color: var(--linea-forte);
 }
 
 .numeri {
