@@ -73,13 +73,33 @@ async function aggiornaCatalogo(env: Env) {
 
 // ---------- Partita IVA ----------
 
-async function cercaImpresa(piva: string): Promise<Impresa | null> {
-  const risposta = await fetch(VIES + piva, { signal: AbortSignal.timeout(10_000) });
+/** VIES risponde 200 anche quando è sovraccarico: questi userError non dicono niente sulla partita IVA. */
+const VIES_DEFINITIVI = new Set(["VALID", "INVALID"]);
+
+/** Una domanda a VIES. Lancia un errore se il registro non ha dato una risposta definitiva. */
+export async function chiediVies(piva: string, prendi: typeof fetch = fetch): Promise<Impresa | null> {
+  const risposta = await prendi(VIES + piva, { signal: AbortSignal.timeout(8_000) });
   if (!risposta.ok) throw new Error(`VIES: HTTP ${risposta.status}`);
-  const d = await risposta.json<{ isValid?: boolean; name?: string; address?: string }>();
+  const d = (await risposta.json()) as { isValid?: boolean; userError?: string; name?: string; address?: string };
+  if (d.userError && !VIES_DEFINITIVI.has(d.userError)) throw new Error(`VIES: ${d.userError}`);
   if (!d.isValid) return null;
   const nome = d.name && d.name !== "---" ? nomeBreve(d.name) : "Ragione sociale non pubblicata";
   return { piva, nome, ...leggiSede(d.address ?? "") };
+}
+
+/** VIES è lento e a volte occupato: fino a tre tentativi, con una breve pausa tra l'uno e l'altro. */
+export async function cercaImpresa(piva: string, prendi: typeof fetch = fetch, pausa = 600): Promise<Impresa | null> {
+  let ultimo: unknown;
+  for (let tentativo = 0; tentativo < 3; tentativo++) {
+    try {
+      return await chiediVies(piva, prendi);
+    } catch (e) {
+      ultimo = e;
+      console.warn(`VIES ${piva}, tentativo ${tentativo + 1}: ${e instanceof Error ? e.message : e}`);
+      if (tentativo < 2) await new Promise((r) => setTimeout(r, pausa * (tentativo + 1)));
+    }
+  }
+  throw ultimo;
 }
 
 async function impresa(request: Request, env: Env): Promise<Response> {
