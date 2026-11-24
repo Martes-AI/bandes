@@ -1,4 +1,5 @@
 import { leggiSede, nomeBreve, pivaValida, pulisciPiva } from "../src/lib/piva";
+import { conSicurezza } from "./sicurezza";
 import {
   DIMENSIONI,
   MAX_BANDI_DA_VALUTARE,
@@ -381,28 +382,32 @@ async function valuta(request: Request, env: Env, ctx: ExecutionContext): Promis
 
 export default {
   async fetch(request, env, ctx): Promise<Response> {
-    const url = new URL(request.url);
-    try {
-      if (url.pathname === "/api/stato" && request.method === "GET") {
-        return json({ ai: Boolean(env.OPENROUTER_API_KEY), modello: env.MODELLO });
-      }
-      if (url.pathname === "/api/catalogo" && request.method === "GET") {
-        return new Response(await testoCatalogo(env, url), {
-          headers: { "content-type": "application/json; charset=utf-8", "cache-control": "private, max-age=600" },
-        });
-      }
-      if (url.pathname === "/api/impresa" && request.method === "GET") return await impresa(request, env);
-      if (url.pathname === "/api/cerca-impresa" && request.method === "GET") return await cercaImpresaPerNome(request, env);
-      if (url.pathname === "/api/valuta" && request.method === "POST") return await valuta(request, env, ctx);
-    } catch (e) {
-      console.error(url.pathname, e);
-      return json({ errore: "errore-interno" }, 500);
-    }
-    if (url.pathname.startsWith("/api/")) return json({ errore: "non-trovato" }, 404);
-    return env.ASSETS.fetch(request);
+    return conSicurezza(await instrada(request, env, ctx));
   },
 
   async scheduled(_evento, env, ctx) {
     ctx.waitUntil(aggiornaCatalogo(env));
   },
 } satisfies ExportedHandler<Env>;
+
+async function instrada(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  const url = new URL(request.url);
+  try {
+    if (url.pathname === "/api/stato" && request.method === "GET") {
+      return json({ ai: Boolean(env.OPENROUTER_API_KEY), modello: env.MODELLO });
+    }
+    if (url.pathname === "/api/catalogo" && request.method === "GET") {
+      return new Response(await testoCatalogo(env, url), {
+        headers: { "content-type": "application/json; charset=utf-8", "cache-control": "private, max-age=600" },
+      });
+    }
+    if (url.pathname === "/api/impresa" && request.method === "GET") return await impresa(request, env);
+    if (url.pathname === "/api/cerca-impresa" && request.method === "GET") return await cercaImpresaPerNome(request, env);
+    if (url.pathname === "/api/valuta" && request.method === "POST") return await valuta(request, env, ctx);
+  } catch (e) {
+    console.error(url.pathname, e);
+    return json({ errore: "errore-interno" }, 500);
+  }
+  if (url.pathname.startsWith("/api/")) return json({ errore: "non-trovato" }, 404);
+  return env.ASSETS.fetch(request);
+}
